@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Select Your Photos — DD Photography</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="Select Your Photos — DD Photography">
+<meta property="og:description" content="Tap to choose your favourite photos for your album.">
+<meta property="og:image" content="https://svsproductionhouse-ctrl.github.io/star-gallery/g/ddphotography53peh7/cover.jpg">
+<style>
+  :root{--bg:#14100c;--panel:#1f1a14;--line:#3a3227;--ink:#f5efe4;--muted:#a99a78;--brass:#c9a227;--ok:#2ea44f}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
+  html,body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  body{padding-bottom:90px}
+  header{text-align:center;padding:20px 16px 10px}
+  .studio{color:var(--brass);letter-spacing:.22em;text-transform:uppercase;font-size:12px;min-height:14px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:normal;font-style:italic;font-size:25px;margin-top:6px}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px}
+  .toolbar{position:sticky;top:0;z-index:5;display:flex;justify-content:center;padding:8px 16px;
+    background:rgba(20,16,12,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .chip{border:1px solid #4a3f30;background:transparent;color:var(--ink);border-radius:999px;
+    padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+  .chip.on{border-color:var(--brass);color:var(--brass)}
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:6px;padding:8px 16px}
+  .tile{position:relative;aspect-ratio:1/1;background:#2a231b;border-radius:6px;overflow:hidden;cursor:pointer}
+  .tile img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .3s}
+  .tile.ready img{opacity:1}
+  .tile .num{position:absolute;left:6px;bottom:4px;font-size:11px;color:#fff;text-shadow:0 1px 3px #000}
+  .tile .tick{position:absolute;right:5px;top:5px;width:30px;height:30px;border-radius:50%;border:2px solid #fff;
+    background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:16px;color:transparent}
+  .tile.on{outline:3px solid var(--brass);outline-offset:-3px}
+  .tile.on .tick{background:var(--brass);border-color:var(--brass);color:#1c1713}
+  .tile.hide{display:none}
+  #msg{padding:70px 24px;text-align:center;color:var(--muted);line-height:1.6}
+  #bar{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+  #count{font-size:15px}
+  .btn{background:var(--brass);color:#1c1713;border:none;border-radius:8px;padding:12px 18px;font-size:15px;
+    font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+  .btn:disabled{opacity:.4;cursor:default}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid #4a3f30}
+  #viewer{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column}
+  .vtop{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:var(--muted);font-size:14px}
+  .vstage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
+  .vstage img{max-width:100%;max-height:100%;object-fit:contain}
+  .nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:68px;border:none;
+    background:rgba(255,255,255,.1);color:#fff;font-size:30px;cursor:pointer}
+  .nav.prev{left:0;border-radius:0 8px 8px 0}
+  .nav.next{right:0;border-radius:8px 0 0 8px}
+  .vbottom{display:flex;justify-content:center;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
+  #vsel{min-width:220px}
+  #vsel.on{background:var(--ok);color:#fff}
+  .overlay{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 20px;max-width:380px;width:100%;text-align:center}
+  .card h2{font-family:Georgia,"Times New Roman",serif;font-weight:normal;font-size:21px;margin-bottom:10px}
+  .card p{color:var(--muted);font-size:14px;line-height:1.55}
+  .code{font-size:34px;letter-spacing:.18em;color:var(--brass);margin:16px 0 4px;font-weight:700}
+  .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+  .expiry{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 12px;border-radius:999px;
+    font-size:12.5px;color:var(--brass);border:1px solid rgba(201,162,39,.35);background:rgba(201,162,39,.08)}
+  .expiry.urgent{color:#ff8a65;border-color:rgba(255,138,101,.5);background:rgba(255,138,101,.1)}
+</style>
+</head>
+<body>
+<header>
+  <div class="studio" id="studio"></div>
+  <h1>Select Your Photos</h1>
+  <p class="sub" id="sub">Loading…</p>
+  <div class="expiry" id="expiry" hidden></div>
+</header>
+<div class="toolbar" id="toolbar"><button class="chip" id="filterBtn">Show Selected (0)</button></div>
+<div id="msg" hidden></div>
+<main id="grid"></main>
+<div id="bar">
+  <span id="count">0 selected</span>
+  <button class="btn" id="confirmBtn" disabled>Confirm Selection</button>
+</div>
+
+<div id="viewer" hidden>
+  <div class="vtop"><span id="vpos"></span><button class="chip" id="vclose">Close ✕</button></div>
+  <div class="vstage" id="vstage">
+    <img id="vimg" alt="">
+    <button class="nav prev" id="vprev" aria-label="Previous photo">‹</button>
+    <button class="nav next" id="vnext" aria-label="Next photo">›</button>
+  </div>
+  <div class="vbottom"><button class="btn" id="vsel">Select This Photo</button></div>
+</div>
+
+<div class="overlay" id="modal" hidden>
+  <div class="card">
+    <h2>Confirm Your Selection?</h2>
+    <p>You have selected <b id="mcount">0</b> photos. They will be sent to your photographer.</p>
+    <div class="row">
+      <button class="btn ghost" id="mCancel">Go Back</button>
+      <button class="btn" id="mOk">Yes, Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="done" hidden>
+  <div class="card">
+    <h2>Selection Sent!</h2>
+    <p><b id="dcount">0</b> photos confirmed. Send this code to your photographer:</p>
+    <div class="code" id="dcode"></div>
+    <div class="row">
+      <button class="btn" id="dcopy">Copy Code</button>
+      <a class="btn ghost" id="dwa" target="_blank" rel="noopener">Share on WhatsApp</a>
+    </div>
+    <p style="margin-top:16px">Want to change something? Edit your selection and confirm again, then send the same code.</p>
+    <div class="row"><button class="btn ghost" id="dedit">Edit Selection</button></div>
+  </div>
+</div>
+
+<script>
+const GATEWAY = "https://script.google.com/macros/s/AKfycbzyHupxzb97oaWn7d2shSUZic4bdYHwXWYh0TKsymKGv0T0fg1ZLZcyD5m8sAWaZCGL/exec";
+const EVENT = "ddphotography53peh7";
+const EXPIRY_DAYS = 7;
+const KEY = "star_sel_" + EVENT;
+const $ = id => document.getElementById(id);
+
+let M = null, tiles = [], urls = [], sel = new Set(), onlySel = false, cur = -1, loaded = 0;
+
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify([...sel])); }catch(e){} }
+function restore(valid){
+  try{ JSON.parse(localStorage.getItem(KEY) || "[]").forEach(id => { if (valid.has(id)) sel.add(id); }); }catch(e){}
+}
+
+function showMessage(text){
+  $("grid").innerHTML = ""; $("bar").hidden = true; $("toolbar").hidden = true; $("sub").textContent = "";
+  $("expiry").hidden = true; $("viewer").hidden = true; $("modal").hidden = true;
+  $("msg").textContent = text; $("msg").hidden = false;
+}
+
+ 
+let expiresAt = 0, expiryTimer = null;
+function plural(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
+function updateExpiry(){
+  const left = expiresAt - Date.now();
+  if (left <= 0){
+    clearInterval(expiryTimer);
+    showMessage("This selection link has expired. Please contact your photographer for a new link.");
+    return;
+  }
+  const d = Math.floor(left / 864e5), h = Math.floor(left % 864e5 / 36e5), m = Math.floor(left % 36e5 / 6e4);
+  const until = new Date(expiresAt).toLocaleString("en-IN",
+    {day: "numeric", month: "short", hour: "numeric", minute: "2-digit"});
+  const span = d > 0 ? plural(d, "day") + " " + plural(h, "hour")
+             : h > 0 ? plural(h, "hour") + " " + plural(m, "min")
+             : plural(Math.max(m, 1), "min");
+  const el = $("expiry");
+  el.textContent = "⏳ Link valid for " + span + "  ·  until " + until;
+  el.classList.toggle("urgent", left < 864e5);
+  el.hidden = false;
+}
+
+async function init(){
+  try{
+    const r = await fetch("manifest.json", {cache: "no-store"});
+    if (!r.ok) throw new Error("not found");
+    M = await r.json();
+  }catch(e){
+    showMessage("This gallery could not be loaded. Please check the link, or try again in a minute.");
+    return;
+  }
+  if (M.studio_name) $("studio").textContent = M.studio_name;
+  const created = Date.parse(M.created_at);
+  if (created && Date.now() - created > EXPIRY_DAYS * 864e5){
+    showMessage("This selection link has expired. Please contact your photographer for a new link.");
+    return;
+  }
+  restore(new Set(M.photos.map(p => p.id)));
+  if (created){
+    expiresAt = created + EXPIRY_DAYS * 864e5;
+    updateExpiry();
+    expiryTimer = setInterval(updateExpiry, 60000);
+  }
+  buildGrid(); refresh(); loadAll();
+}
+
+function buildGrid(){
+  const frag = document.createDocumentFragment();
+  M.photos.forEach((p, i) => {
+    const t = document.createElement("div");
+    t.className = "tile" + (sel.has(p.id) ? " on" : "");
+    const img = document.createElement("img"); img.alt = "Photo " + (i + 1);
+    const tick = document.createElement("span"); tick.className = "tick"; tick.textContent = "✓";
+    const num = document.createElement("span"); num.className = "num"; num.textContent = i + 1;
+    t.append(img, tick, num);
+    tick.addEventListener("click", e => { e.stopPropagation(); toggle(i); });
+    t.addEventListener("click", () => openViewer(i));
+    tiles.push(t); frag.appendChild(t);
+  });
+  $("grid").appendChild(frag);
+}
+
+function toggle(i){
+  const id = M.photos[i].id;
+  if (sel.has(id)) sel.delete(id); else sel.add(id);
+  tiles[i].classList.toggle("on", sel.has(id));
+  persist(); refresh();
+  if (cur === i) showCur();
+}
+
+function refresh(){
+  const n = sel.size;
+  $("count").textContent = n + " of " + M.photos.length + " selected";
+  $("confirmBtn").disabled = n === 0;
+  $("filterBtn").textContent = onlySel ? "Show All Photos" : "Show Selected (" + n + ")";
+  $("filterBtn").classList.toggle("on", onlySel);
+  tiles.forEach((t, i) => t.classList.toggle("hide", onlySel && !sel.has(M.photos[i].id)));
+  updateSub();
+}
+
+function updateSub(){
+  $("sub").textContent = loaded < M.photos.length
+    ? "Loading photos… " + loaded + " / " + M.photos.length
+    : "Tap a photo to view it large. Tap ✓ to select.";
+}
+
+function loadAll(){
+  const byPart = M.parts.map(() => []);
+  M.photos.forEach((p, i) => { if (byPart[p.p]) byPart[p.p].push(i); });
+  let next = 0;
+  async function worker(){ while (next < M.parts.length){ const pi = next++; await loadPart(pi, byPart[pi]); } }
+  Promise.all([worker(), worker()]).then(updateSub);
+}
+
+async function loadPart(pi, idxs){
+  for (let attempt = 0; attempt < 4; attempt++){
+    try{
+      const r = await fetch(M.parts[pi]);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const buf = await r.arrayBuffer();
+      idxs.forEach(i => {
+        const p = M.photos[i];
+        urls[i] = URL.createObjectURL(new Blob([new Uint8Array(buf, p.o, p.l)], {type: "image/jpeg"}));
+        const img = tiles[i].firstChild;
+        img.onload = () => tiles[i].classList.add("ready");
+        img.src = urls[i];
+        if (cur === i) showCur();
+      });
+      loaded += idxs.length; updateSub();
+      return;
+    }catch(e){
+      await new Promise(res => setTimeout(res, 1500 * (attempt + 1)));
+    }
+  }
+}
+
+ 
+function order(){ return M.photos.map((p, i) => i).filter(i => !onlySel || sel.has(M.photos[i].id)); }
+function openViewer(i){ cur = i; $("viewer").hidden = false; document.body.style.overflow = "hidden"; showCur(); }
+function closeViewer(){
+  $("viewer").hidden = true; document.body.style.overflow = "";
+  if (cur >= 0 && tiles[cur]) tiles[cur].scrollIntoView({block: "nearest"});
+  cur = -1;
+}
+function showCur(){
+  if (cur < 0) return;
+  const img = $("vimg");
+  if (urls[cur]) img.src = urls[cur]; else img.removeAttribute("src");
+  $("vpos").textContent = "Photo " + (cur + 1) + " of " + M.photos.length;
+  const on = sel.has(M.photos[cur].id);
+  $("vsel").textContent = on ? "✓ Selected" : "Select This Photo";
+  $("vsel").classList.toggle("on", on);
+}
+function step(d){
+  const o = order(); if (!o.length) return;
+  let pos = o.indexOf(cur);
+  pos = pos < 0 ? 0 : Math.min(Math.max(pos + d, 0), o.length - 1);
+  cur = o[pos]; showCur();
+}
+$("vclose").onclick = closeViewer;
+$("vprev").onclick = () => step(-1);
+$("vnext").onclick = () => step(1);
+$("vsel").onclick = () => { if (cur >= 0) toggle(cur); };
+let sx = null;
+$("vstage").addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, {passive: true});
+$("vstage").addEventListener("touchend", e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx;
+  if (dx < -40) step(1); else if (dx > 40) step(-1);
+  sx = null;
+}, {passive: true});
+document.addEventListener("keydown", e => {
+  if ($("viewer").hidden) return;
+  if (e.key === "ArrowRight") step(1);
+  else if (e.key === "ArrowLeft") step(-1);
+  else if (e.key === "Escape") closeViewer();
+  else if (e.key === " "){ e.preventDefault(); toggle(cur); }
+});
+
+ 
+$("filterBtn").onclick = () => { onlySel = !onlySel; refresh(); window.scrollTo({top: 0}); };
+$("confirmBtn").onclick = () => { $("mcount").textContent = sel.size; $("modal").hidden = false; };
+$("mCancel").onclick = () => { $("modal").hidden = true; };
+$("mOk").onclick = async () => {
+  const b = $("mOk"); b.disabled = true; b.textContent = "Sending…";
+  try{
+    const r = await fetch(GATEWAY, {method: "POST",
+      body: JSON.stringify({action: "saveSelection", eventToken: EVENT, selectedIds: [...sel]})});
+    let j = null; try{ j = await r.json(); }catch(e){}
+    if (!j || !j.ok){
+      alert((j && j.error) || "Could not send your selection. Please check your internet and try again.");
+      return;
+    }
+    $("modal").hidden = true;
+    showDone(j.shortCode, j.confirmedCount);
+  }catch(e){
+    alert("Could not send your selection. Please check your internet and try again.");
+  }finally{
+    b.disabled = false; b.textContent = "Yes, Confirm";
+  }
+};
+function showDone(code, n){
+  $("dcode").textContent = code; $("dcount").textContent = n; $("dcopy").textContent = "Copy Code";
+  $("dwa").href = "https://wa.me/?text=" + encodeURIComponent("My photo selection code: " + code + " (" + n + " photos)");
+  $("done").hidden = false;
+}
+$("dcopy").onclick = async () => {
+  try{ await navigator.clipboard.writeText($("dcode").textContent); $("dcopy").textContent = "Copied!"; }catch(e){}
+};
+$("dedit").onclick = () => { $("done").hidden = true; };
+
+init();
+</script>
+</body>
+</html>
